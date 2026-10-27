@@ -5,7 +5,7 @@
 
 function initSectionParity() {
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const cmds = ['run_test --coverage 99 --link L0', 'check_coverage -> 86-99% PASS', 'report_bugs -> 20+ closed', 'tape_out -> L0 LOCKED', 'cd ~/builder && npm run ship'];
+  const cmds = ['run_test', 'check_coverage -> closed', 'report_bugs -> found pre-silicon', 'tape_out -> signed off', 'cd ~/builder && npm run ship'];
   const typer = document.getElementById('typer-text');
   const replay = document.getElementById('typer-replay');
   let ci = 0, charI = (cmds[0] || '').length, deleting = true, timer = null;
@@ -416,7 +416,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const bootLines = [
     { text: '> SILICON_PIPELINE v4.0 initialized', cls: '' },
     { text: '> Engineer: Ankit Gupta · ASIC Verification Engineer', cls: 't-highlight' },
-    { text: '> PCIe Gen5 · UVM · 4+ yrs DV · 2 patents', cls: '' },
+    { text: '> PCIe · UVM · 4+ yrs DV · 2 patents', cls: '' },
     { text: '> Status: READY', cls: 't-highlight' },
   ];
 
@@ -937,16 +937,16 @@ function siliconLab() {
   let playing = true, t = 0, zoom = 2, periodNs = 4, stage = 'cache';
   const lanes = { clk: true, reset: true, valid: true, ready: true, data: true, ltssm: true };
   const stageCap = {
-    cache: 'Cache Subsystem: Coherency, credit-based arbitration, and multi-agent UVM verification driving coverage to sign-off.',
-    tlp: 'PCIe Gen5 Protocol: Back-to-back transaction layer packets, flow control credits, and stress testing at 32 GT/s line rates.',
-    phy: 'PHY Link Training: Equalization sequences, ordered sets, and x16 lane alignment hunting for solid L0 state lock.',
-    serial: 'Hardware Bring-up: Peripheral loopback verification, BERT patterns, and zero-error validation on FPGA emulation platforms.'
+    cache: 'Public-spec sketch: subsystem verification with UVM, taken through coverage sign-off. Not a product trace.',
+    tlp: 'Public-spec sketch: Gen5-class serial protocol traffic. Not a product trace.',
+    phy: 'Public-spec sketch: link-training states on the way to L0. Not a product trace.',
+    serial: 'Public-spec sketch: peripheral and FPGA bring-up checks. Not a product trace.'
   };
   const stageMetrics = {
-    cache: ['Stage 1/4 · Cache Subsystem 🏆', 'Coherency Protocol', 'Credit Arbitration', 'Coverage Sign-off'],
-    tlp: ['Stage 2/4 · PCIe Gen5 🏆', 'Transaction Layer', 'Flow Control', 'Line-Rate Closure'],
-    phy: ['Stage 3/4 · High-Speed PHY 🏆', 'Link Training', 'x16 Equalization', 'L0 State Lock'],
-    serial: ['Stage 4/4 · Bring-up 🏆', 'FPGA Emulation', 'BERT Pattern', 'Zero Bit Errors']
+    cache: ['Stage 1/4 · Subsystem UVM', 'Protocol blocks', 'Multi-agent tests', 'Coverage sign-off'],
+    tlp: ['Stage 2/4 · Gen5-class serial', 'Transaction sketch', 'Flow control', 'Public spec'],
+    phy: ['Stage 3/4 · Link training', 'LTSSM states', 'Ordered sets', 'L0 sketch'],
+    serial: ['Stage 4/4 · Bring-up', 'FPGA emulation', 'Loopback checks', 'Peripheral I/O']
   };
   function sizeCanvas(c) {
     const r = c.getBoundingClientRect();
@@ -1028,7 +1028,7 @@ function siliconLab() {
     if (playing && r.bottom > 0 && r.top < window.innerHeight) {
       t += 1.2; drawWave();
       const ro = document.getElementById('wave-readout');
-      const stageName = { cache: 'Cache Subsystem', tlp: 'PCIe Gen5', phy: 'PCIe PHY', serial: 'Bring-up' }[stage] || stage;
+      const stageName = { cache: 'Subsystem sketch', tlp: 'Gen5-class serial', phy: 'Link training', serial: 'Bring-up' }[stage] || stage;
       if (ro) ro.textContent = 't = ' + (t | 0) + ' ns · ' + stageName + ' · ' + Math.round(1000 / periodNs) + ' MHz · L0' + (Date.now() < scrubUntil ? ' · SCRUB' : '') + (playing ? '' : ' · HELD');
     }
     requestAnimationFrame(tickWave);
@@ -1066,12 +1066,7 @@ function siliconLab() {
   function animateBugCounter() {
     const m = document.getElementById('lab-stage-metrics');
     if (!m) return;
-    let n = 0;
-    const iv = setInterval(() => {
-      n += 2;
-      if (n >= 20) { n = 20; clearInterval(iv); }
-      m.innerHTML = '<span class="metric-chip hot">Stage 2/4 · PCIe Gen5 🏆</span><span class="metric-chip">Transaction Layer</span><span class="metric-chip">Critical Bugs Closed</span><span class="metric-chip">Coverage Sign-off</span>';
-    }, 90);
+    m.innerHTML = (stageMetrics.tlp || []).map((x, i) => '<span class="metric-chip' + (i === 0 ? ' hot' : '') + '">' + x + '</span>').join('');
   }
   function flashLanes() {
     const nodes = document.querySelectorAll('.ltssm-node');
@@ -1260,7 +1255,7 @@ function siliconLab() {
     if (dv) dv.textContent = duty + '%';
     if (vv) vv.textContent = '÷' + div;
     if (pv) pv.textContent = ph + '°';
-    if (ro) ro.textContent = 'Period ' + per.toFixed(2) + 'ns · ' + f + 'MHz · ÷' + div + ' · ' + ph + '° — my Gen4→Gen5 speedup';
+    if (ro) ro.textContent = 'Period ' + per.toFixed(2) + 'ns · ' + f + 'MHz · ÷' + div + ' · ' + ph + '° — illustrative';
     const x2 = c.getContext('2d');
     x2.fillStyle = '#07070c'; x2.fillRect(0, 0, c.width, c.height);
     x2.font = (10 * d2) + 'px JetBrains Mono, monospace'; x2.fillStyle = '#8888a0';
