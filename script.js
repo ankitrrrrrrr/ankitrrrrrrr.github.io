@@ -104,7 +104,7 @@ function initAboutStoryboard() {
 
   const phaseNames = [
     'STAGE 01 // BOOT · VIIT PUNE',
-    'STAGE 02 // VERIFY · CHELSIO DV',
+    'STAGE 02 // VERIFY · SILICON DV',
     'STAGE 03 // SHIP · INDIE BUILDER'
   ];
   const phaseColors = [
@@ -415,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const bootLines = [
     { text: '> SILICON_PIPELINE v4.0 initialized', cls: '' },
-    { text: '> Engineer: Ankit Gupta · Chelsio Bangalore', cls: 't-highlight' },
+    { text: '> Engineer: Ankit Gupta · ASIC Verification Engineer', cls: 't-highlight' },
     { text: '> PCIe Gen5 · UVM · 4+ yrs DV · 2 patents', cls: '' },
     { text: '> Status: READY', cls: 't-highlight' },
   ];
@@ -937,44 +937,63 @@ function siliconLab() {
   let playing = true, t = 0, zoom = 2, periodNs = 4, stage = 'cache';
   const lanes = { clk: true, reset: true, valid: true, ready: true, data: true, ltssm: true };
   const stageCap = {
-    cache: 'First ownership: cache coherency + arbitration. Directed + constrained-random tests, credits stable, link parked in L0.',
-    tlp: 'My biggest win: back-to-back Gen5 TLPs, flow-control credits dancing — 530+ tests, 20+ bugs, 86→99% coverage.',
-    phy: 'The 2am debug: equalization sweeps, ordered sets, x16 lanes hunting for lock. Retrain, relock, repeat.',
-    serial: 'Bring-up joy: UART loopback pattern, BERT-style PRBS, error counter falling to zero on the FPGA.'
+    cache: 'Cache Subsystem: Coherency, credit-based arbitration, and multi-agent UVM verification driving coverage to sign-off.',
+    tlp: 'PCIe Gen5 Protocol: Back-to-back transaction layer packets, flow control credits, and stress testing at 32 GT/s line rates.',
+    phy: 'PHY Link Training: Equalization sequences, ordered sets, and x16 lane alignment hunting for solid L0 state lock.',
+    serial: 'Hardware Bring-up: Peripheral loopback verification, BERT patterns, and zero-error validation on FPGA emulation platforms.'
   };
   const stageMetrics = {
-    cache: ['Stage 1/4 · GCache 🏆', 'my first ownership', 'coherency ✓'],
-    tlp: ['Stage 2/4 · Gen5 TLP 🏆', '530+ tests', '20+ bugs closed', '86→99% cov', '360→426 Gbps'],
-    phy: ['Stage 3/4 · PCIe PHY x2 🏆', 'RC / EP / SWITCH', 'x16 lanes → LOCK'],
-    serial: ['Stage 4/4 · UART 🏆', 'loopback ✓', 'errors → 0']
+    cache: ['Stage 1/4 · Cache Subsystem 🏆', 'Coherency Protocol', 'Credit Arbitration', 'Coverage Sign-off'],
+    tlp: ['Stage 2/4 · PCIe Gen5 🏆', 'Transaction Layer', 'Flow Control', 'Line-Rate Closure'],
+    phy: ['Stage 3/4 · High-Speed PHY 🏆', 'Link Training', 'x16 Equalization', 'L0 State Lock'],
+    serial: ['Stage 4/4 · Bring-up 🏆', 'FPGA Emulation', 'BERT Pattern', 'Zero Bit Errors']
   };
   function sizeCanvas(c) {
     const r = c.getBoundingClientRect();
     const d = Math.min(2, window.devicePixelRatio || 1);
+    const isMobile = window.innerWidth <= 768;
     c.width = Math.max(300, (r.width || 600) * d);
-    c.height = (parseInt(c.getAttribute('height')) || 200) * d;
+    const baseH = isMobile ? 140 : 200;
+    c.height = baseH * d;
   }
   sizeCanvas(wave);
   window.addEventListener('resize', () => sizeCanvas(wave));
+
+  // Touch scrub on mobile for wave canvas
+  let touchStartX = null;
+  wave.addEventListener('touchstart', e => {
+    if (e.touches && e.touches[0]) touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+  wave.addEventListener('touchmove', e => {
+    if (touchStartX !== null && e.touches && e.touches[0]) {
+      const dx = e.touches[0].clientX - touchStartX;
+      touchStartX = e.touches[0].clientX;
+      t -= dx * 0.35;
+      drawWave();
+    }
+  }, { passive: true });
+  wave.addEventListener('touchend', () => { touchStartX = null; }, { passive: true });
+
   const dataRegs = [0xA5, 0x3C, 0xF0, 0x11, 0xBC, 0x5A];
   function drawWave() {
     const W = wave.width, H = wave.height, d = Math.min(2, window.devicePixelRatio || 1);
+    const isMobile = window.innerWidth <= 768;
     wctx.clearRect(0, 0, W, H);
     wctx.fillStyle = '#07070c'; wctx.fillRect(0, 0, W, H);
-    const rows = [['clk', 'clk'], ['reset', 'reset_n'], ['valid', 'tx_valid'], ['ready', 'tx_ready'], ['data', 'tlp_data'], ['ltssm', 'ltssm_state']].filter(([k]) => lanes[k]);
+    const rows = [['clk', 'clk'], ['reset', 'reset_n'], ['valid', 'tx_valid'], ['ready', 'tx_ready'], ['data', 'data'], ['ltssm', 'state']].filter(([k]) => lanes[k]);
     if (!rows.length) return;
     const rh = H / rows.length, pxPerNs = 6 * zoom * d;
-    wctx.font = (10 * d) + 'px JetBrains Mono, monospace';
+    wctx.font = ((isMobile ? 8.5 : 10) * d) + 'px JetBrains Mono, monospace';
     rows.forEach(([key, label], i) => {
       const y0 = i * rh, mid = y0 + rh / 2, lo = mid + rh * 0.28, hi = mid - rh * 0.28;
-      wctx.fillStyle = '#8888a0'; wctx.fillText(label, 8 * d, y0 + 14 * d);
+      wctx.fillStyle = '#8888a0'; wctx.fillText(label, 8 * d, y0 + 13 * d);
       wctx.strokeStyle = 'rgba(255,255,255,.06)'; wctx.lineWidth = d;
       wctx.beginPath(); wctx.moveTo(0, y0 + rh); wctx.lineTo(W, y0 + rh); wctx.stroke();
       wctx.lineWidth = 1.6 * d;
       wctx.strokeStyle = key === 'clk' ? '#00ff88' : key === 'ltssm' ? '#a855f7' : key === 'data' ? '#ffd700' : '#00e5ff';
       wctx.beginPath();
       let prevY = null;
-      for (let x = 60 * d; x < W; x += 2) {
+      for (let x = (isMobile ? 50 : 60) * d; x < W; x += 2) {
         const ns = (x / pxPerNs) + t;
         let y = mid;
         if (key === 'clk') y = ((((ns / (periodNs / 2)) | 0) % 2) === 0) ? hi : lo;
@@ -983,7 +1002,7 @@ function siliconLab() {
         else if (key === 'ready') y = (ns % 31 < 26) ? hi : lo;
         else if (key === 'ltssm') y = mid + Math.sin(ns / 40) * rh * 0.22;
         else if (key === 'data') y = ((((ns / 12) | 0) % 2) ? mid - rh * 0.18 : mid + rh * 0.18);
-        if (x === 60 * d) wctx.moveTo(x, y);
+        if (x === (isMobile ? 50 : 60) * d) wctx.moveTo(x, y);
         else if (key === 'data') wctx.lineTo(x, y);
         else { wctx.lineTo(x, prevY); wctx.lineTo(x, y); }
         prevY = y;
@@ -993,7 +1012,7 @@ function siliconLab() {
         wctx.fillStyle = 'rgba(255,215,0,.85)';
         for (let k = 0; k < 4; k++) {
           const hx = dataRegs[(k + ((t / 40) | 0)) % dataRegs.length].toString(16).toUpperCase().padStart(2, '0');
-          wctx.fillText('0x' + hx, (90 + k * 90) * d, mid + 4 * d);
+          wctx.fillText('0x' + hx, ((isMobile ? 70 : 90) + k * (isMobile ? 65 : 90)) * d, mid + 3 * d);
         }
       }
     });
@@ -1009,8 +1028,8 @@ function siliconLab() {
     if (playing && r.bottom > 0 && r.top < window.innerHeight) {
       t += 1.2; drawWave();
       const ro = document.getElementById('wave-readout');
-      const stageName = { cache: 'GCache', tlp: 'Gen5 TLP', phy: 'PCIe PHY', serial: 'UART' }[stage] || stage;
-      if (ro) ro.textContent = 't = ' + (t | 0) + ' ns · ' + stageName + ' · period ' + periodNs + 'ns (' + Math.round(1000 / periodNs) + ' MHz) · L0' + (Date.now() < scrubUntil ? ' · SCROLL-SCRUB' : '') + (playing ? '' : ' · HELD');
+      const stageName = { cache: 'Cache Subsystem', tlp: 'PCIe Gen5', phy: 'PCIe PHY', serial: 'Bring-up' }[stage] || stage;
+      if (ro) ro.textContent = 't = ' + (t | 0) + ' ns · ' + stageName + ' · ' + Math.round(1000 / periodNs) + ' MHz · L0' + (Date.now() < scrubUntil ? ' · SCRUB' : '') + (playing ? '' : ' · HELD');
     }
     requestAnimationFrame(tickWave);
   }
@@ -1051,7 +1070,7 @@ function siliconLab() {
     const iv = setInterval(() => {
       n += 2;
       if (n >= 20) { n = 20; clearInterval(iv); }
-      m.innerHTML = '<span class="metric-chip hot">Stage 2/4 · Gen5 TLP 🏆</span><span class="metric-chip">530+ tests</span><span class="metric-chip">' + n + '+ bugs closed</span><span class="metric-chip">86→99% cov</span>';
+      m.innerHTML = '<span class="metric-chip hot">Stage 2/4 · PCIe Gen5 🏆</span><span class="metric-chip">Transaction Layer</span><span class="metric-chip">Critical Bugs Closed</span><span class="metric-chip">Coverage Sign-off</span>';
     }, 90);
   }
   function flashLanes() {
@@ -1064,18 +1083,39 @@ function siliconLab() {
       if (i >= order.length) clearInterval(iv);
     }, 350);
   }
+
+  // Mobile Lab Module Switcher
+  const mobileLabTabs = document.querySelectorAll('.mobile-lab-tab');
+  mobileLabTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      mobileLabTabs.forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      tab.classList.add('active');
+      tab.setAttribute('aria-selected', 'true');
+      const panel = tab.dataset.labPanel;
+      document.body.dataset.labActive = panel;
+      if (panel === 'waveform') {
+        sizeCanvas(wave);
+        drawWave();
+      }
+    });
+  });
+  document.body.dataset.labActive = 'waveform';
+
   const ltssmInfo = {
-    Detect: ['Detect — where every link starts', 'My PHY story began here: is anything plugged in? Receiver detection, the first green blip in the viewer.'],
-    Polling: ['Polling — bit & symbol lock', 'Ordered sets flying, polarity checks, data-rate negotiation. I watched these patterns hunt for lock.'],
-    Configuration: ['Configuration — lanes become a link', 'Lane numbering, width and speed agreement. When this passed, my coverage jumped.'],
-    L0: ['L0 — where my link lived', 'Full-speed packets at Gen5 pace — 530+ tests, 20+ bugs closed, 86→99% coverage to hold this state.'],
-    L0s: ['L0s — light sleep, fast wake', 'Tx naps to save power. My ASPM tests hammered the entry/exit corners.'],
-    L1: ['L1 — deeper sleep', 'Clocks gated, slower wake. Power-aware tests lived here.'],
-    L2: ['L2 — aux-only sleep', 'Main power off, wake via beacon. Rare but must-not-hang.'],
-    Recovery: ['Recovery — the 2am retrain', 'My debug loop: re-lock, redo equalization, pray for L0. Hit "Replay my retrain debug" to relive it.'],
-    'Hot Reset': ['Hot Reset — in-band reset', 'Reset without dropping power. Re-enters Detect.'],
-    Disable: ['Disable — link off', 'Electrical idle until retrain is directed.'],
-    Loopback: ['Loopback — my BERT playground', 'Tx looped to Rx for pattern tests — same idea as my UART bring-up, at Gen5 pace.']
+    Detect: ['Detect — Link Initial State', 'Physical receiver detection — checks for termination on receiver differential pairs.'],
+    Polling: ['Polling — Bit & Symbol Lock', 'Ordered sets transmitted across lanes for polarity, bit synchronization, and symbol lock.'],
+    Configuration: ['Configuration — Link Width & Speed', 'Negotiating active lane width and data rate to form a coherent link.'],
+    L0: ['L0 — Link Operational', 'Full-speed line-rate traffic — active transmission state with flow control credits.'],
+    L0s: ['L0s — Low Power Standby', 'Fast-wake power management state for idle transmission intervals.'],
+    L1: ['L1 — Low Power Sleep', 'Deep power state with clocks gated, requiring recovery handshake to exit.'],
+    L2: ['L2 — Aux Powered Sleep', 'Main transceiver power down with auxiliary power preserved.'],
+    Recovery: ['Recovery — Retrain Sequence', 'Re-equalization and phase lock recovery when errors occur under line noise.'],
+    'Hot Reset': ['Hot Reset — In-Band Reset', 'Protocol command resetting downstream device state.'],
+    Disable: ['Disable — Link Idle', 'Electrical idle state with transmitters turned off.'],
+    Loopback: ['Loopback — Diagnostic Testing', 'Transmitter looped directly into receiver for BER validation.']
   };
   const ltNodes = document.querySelectorAll('.ltssm-node');
   function setLtssm(s) {
