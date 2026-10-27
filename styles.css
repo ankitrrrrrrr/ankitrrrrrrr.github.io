@@ -1097,76 +1097,194 @@ html.js .rv.in { opacity: 1; transform: translateY(0); }
 .orbit-sub { font-size: 0.78rem; color: var(--text-muted); }
 
 .orbit-container {
-  position: relative; width: 100%; aspect-ratio: 1;
-  max-width: 400px; margin: 0 auto;
-  perspective: 900px;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 440px;
+  margin: 0 auto;
 }
+
 .orbit-center {
-  position: absolute; top: 50%; left: 50%;
-  transform: translate(-50%, -50%) translateZ(45px);
-  width: 70px; height: 70px; border-radius: 50%;
-  background: var(--accent-silicon-glow);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 255, 136, 0.16) 0%, rgba(10, 22, 40, 0.95) 75%);
   border: 2px solid var(--accent-silicon);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  font-family: 'Syne', sans-serif; font-weight: 800;
-  font-size: 1rem; color: var(--accent-silicon);
-  box-shadow: var(--shadow-glow-silicon);
-  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--accent-silicon);
+  box-shadow: 0 0 24px rgba(0, 255, 136, 0.35);
+  z-index: 10;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.orbit-center:hover {
+  transform: translate(-50%, -50%) scale(1.06);
+  box-shadow: 0 0 32px rgba(0, 255, 136, 0.55);
 }
 .orbit-center small {
-  font-size: 0.55rem; font-weight: 500;
-  color: var(--text-muted); font-family: 'JetBrains Mono', monospace;
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+  text-transform: uppercase;
 }
 
+/* Concentric rings */
 .orbit-ring {
-  position: absolute; top: 50%; left: 50%;
-  border: 1px dashed rgba(0,255,136,0.12);
+  position: absolute;
+  top: 50%;
+  left: 50%;
   border-radius: 50%;
-  transform-style: preserve-3d;
+  border: 1px dashed rgba(0, 255, 136, 0.2);
+  transform: translate(-50%, -50%);
+  transition: border-color 0.3s ease;
+  pointer-events: none;
 }
+
 .ring-1 {
-  width: 55%; height: 55%; transform: translate(-50%,-50%);
+  width: 50%;
+  height: 50%;
+  border-color: rgba(0, 255, 136, 0.28);
+  animation: orbit-spin-cw 32s linear infinite;
+  z-index: 5;
 }
 .ring-2 {
-  width: 78%; height: 78%; transform: translate(-50%,-50%);
+  width: 75%;
+  height: 75%;
+  border-color: rgba(0, 229, 255, 0.25);
+  animation: orbit-spin-ccw 42s linear infinite;
+  z-index: 4;
 }
 .ring-3 {
-  width: 100%; height: 100%; transform: translate(-50%,-50%);
+  width: 100%;
+  height: 100%;
+  border-color: rgba(168, 85, 247, 0.22);
+  animation: orbit-spin-cw 54s linear infinite;
+  z-index: 3;
 }
 
+/* Pause on hover or focus */
+.orbit-container:hover .orbit-ring,
+.orbit-container:hover .orbit-chip,
+.orbit-container:focus-within .orbit-ring,
+.orbit-container:focus-within .orbit-chip {
+  animation-play-state: paused !important;
+}
+
+/* Orbit Chips */
 .orbit-chip {
   position: absolute;
-  /* left/top set by layoutAtom(); depth vars set per-frame */
-  padding: 4px 10px; border-radius: 20px;
-  font-size: 0.68rem; font-weight: 600;
+  pointer-events: auto;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 600;
   font-family: 'JetBrains Mono', monospace;
-  white-space: nowrap; cursor: default; z-index: 3;
-  transition: background var(--transition), color var(--transition), border-color var(--transition), box-shadow var(--transition);
-  border: 1px solid rgba(0,255,136,0.15);
-  background: var(--surface);
+  white-space: nowrap;
+  cursor: pointer;
+  z-index: 5;
+  border: 1px solid rgba(0, 255, 136, 0.22);
+  background: rgba(14, 14, 22, 0.94);
   color: var(--accent-silicon);
-  opacity: var(--do, 1);
-  transform: rotateZ(var(--rz, 0deg)) rotateX(var(--rx, 0deg)) scale(var(--ds, 1)) translate(-50%, -50%);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  /* Mathematical placement around ring */
+  --angle: calc(var(--i) * (360deg / var(--total)) - 90deg);
+  left: calc(50% + 50% * cos(var(--angle)));
+  top: calc(50% + 50% * sin(var(--angle)));
+  transform: translate(-50%, -50%);
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
-.orbit-chip:hover {
+
+/* Counter-rotations to keep chips perfectly upright and readable */
+.ring-1 .orbit-chip {
+  animation: orbit-spin-ccw 32s linear infinite;
+}
+.ring-2 .orbit-chip {
+  border-color: rgba(0, 229, 255, 0.25);
+  color: var(--accent-dv);
+  animation: orbit-spin-cw 42s linear infinite;
+}
+.ring-3 .orbit-chip {
+  border-color: rgba(168, 85, 247, 0.25);
+  color: #c084fc;
+  animation: orbit-spin-ccw 54s linear infinite;
+}
+
+/* Standard coordinate fallbacks for older engines */
+.ring-1 .orbit-chip:nth-child(1) { top: 0%; left: 50%; }
+.ring-1 .orbit-chip:nth-child(2) { top: 75%; left: 93.3%; }
+.ring-1 .orbit-chip:nth-child(3) { top: 75%; left: 6.7%; }
+
+.ring-2 .orbit-chip:nth-child(1) { top: 0%; left: 50%; }
+.ring-2 .orbit-chip:nth-child(2) { top: 34.5%; left: 97.6%; }
+.ring-2 .orbit-chip:nth-child(3) { top: 90.5%; left: 79.4%; }
+.ring-2 .orbit-chip:nth-child(4) { top: 90.5%; left: 20.6%; }
+.ring-2 .orbit-chip:nth-child(5) { top: 34.5%; left: 2.4%; }
+
+.ring-3 .orbit-chip:nth-child(1) { top: 0%; left: 50%; }
+.ring-3 .orbit-chip:nth-child(2) { top: 14.6%; left: 85.4%; }
+.ring-3 .orbit-chip:nth-child(3) { top: 50%; left: 100%; }
+.ring-3 .orbit-chip:nth-child(4) { top: 85.4%; left: 85.4%; }
+.ring-3 .orbit-chip:nth-child(5) { top: 100%; left: 50%; }
+.ring-3 .orbit-chip:nth-child(6) { top: 85.4%; left: 14.6%; }
+.ring-3 .orbit-chip:nth-child(7) { top: 50%; left: 0%; }
+.ring-3 .orbit-chip:nth-child(8) { top: 14.6%; left: 14.6%; }
+
+/* Hover states */
+.orbit-chip:hover,
+.orbit-chip:focus-visible {
   background: var(--accent-silicon);
-  color: var(--bg); border-color: var(--accent-silicon);
-  box-shadow: var(--shadow-glow-silicon);
-  transform: rotateZ(var(--rz, 0deg)) rotateX(var(--rx, 0deg)) scale(calc(var(--ds, 1) * 1.18)) translate(-50%, -50%);
-  z-index: 10;
+  color: #04120a;
+  border-color: var(--accent-silicon);
+  box-shadow: 0 0 20px rgba(0, 255, 136, 0.7);
+  z-index: 40;
+}
+.ring-2 .orbit-chip:hover,
+.ring-2 .orbit-chip:focus-visible {
+  background: var(--accent-dv);
+  color: #031520;
+  border-color: var(--accent-dv);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.7);
+}
+.ring-3 .orbit-chip:hover,
+.ring-3 .orbit-chip:focus-visible {
+  background: var(--accent-purple);
+  color: #ffffff;
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.7);
 }
 
 /* Tooltip for orbit chips */
-.orbit-chip[data-tip]:hover::after {
+.orbit-chip[data-tip]:hover::after,
+.orbit-chip[data-tip]:focus-visible::after {
   content: attr(data-tip);
   position: absolute; bottom: calc(100% + 8px); left: 50%;
   transform: translateX(-50%);
-  background: var(--bg); border: 1px solid var(--border);
+  background: #080811; border: 1px solid var(--border);
   border-radius: 6px; padding: 6px 10px;
-  font-size: 0.65rem; color: var(--text-muted);
+  font-size: 0.65rem; color: #fff;
   white-space: nowrap; pointer-events: none;
-  z-index: 20;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  z-index: 50;
+}
+
+@keyframes orbit-spin-cw {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes orbit-spin-ccw {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(-360deg); }
 }
 
 /* Skills connector */
@@ -2569,11 +2687,6 @@ footer span { color: var(--accent-builder); }
   .connector-line { width: 60px; height: 2px; }
   .connector-label { writing-mode: horizontal-tb; }
   .college-grid { grid-template-columns: 1fr; }
-
-  /* Orbit simplification */
-  .orbit-container { max-width: 300px; }
-  .orbit-ring { animation: none !important; }
-  .orbit-chip { font-size: 0.6rem; padding: 3px 7px; }
 }
 
 @media (max-width: 600px) {
@@ -2631,22 +2744,41 @@ footer span { color: var(--accent-builder); }
   .contact-links { flex-direction: column; align-items: stretch; }
   .contact-link-card { text-align: center; justify-content: center; }
 
-  /* Orbit becomes a wrapping chip cloud; tablet and up keep the atom */
+  /* Orbit becomes a structured category group on mobile */
   .orbit-container {
-    display: block; aspect-ratio: auto; height: auto;
-    max-width: none; perspective: none;
+    display: flex; flex-direction: column; gap: 14px;
+    aspect-ratio: auto; height: auto; max-width: none;
+    padding: 6px 0;
   }
-  .orbit-center { display: none; }
+  .orbit-center {
+    position: static; transform: none; margin: 0 auto 6px;
+    width: 68px; height: 68px;
+  }
   .orbit-ring {
-    position: static; width: auto; height: auto;
-    border: none; transform: none !important; display: flex;
-    flex-wrap: wrap; gap: 8px; justify-content: center;
-    margin-bottom: 8px;
+    position: static !important; width: 100% !important; height: auto !important;
+    border: 1px solid var(--border) !important; border-radius: 12px;
+    background: rgba(18, 18, 26, 0.6); padding: 16px 12px 14px;
+    transform: none !important; animation: none !important;
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+    pointer-events: auto;
   }
+  .orbit-ring::before {
+    display: block !important; position: static !important;
+    width: 100%; height: auto; background: none; box-shadow: none;
+    border-radius: 0; margin: 0 0 6px 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+    font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    text-align: center;
+  }
+  .ring-1::before { content: 'RING 01 · CORE HDL'; color: var(--accent-silicon); }
+  .ring-2::before { content: 'RING 02 · PROTOCOLS'; color: var(--accent-dv); }
+  .ring-3::before { content: 'RING 03 · VERIFICATION TOOLS & LAB'; color: #c084fc; }
+  .orbit-ring::after { display: none !important; }
   .orbit-chip,
   .orbit-chip:hover {
-    position: static; left: auto; top: auto; transform: none;
-    font-size: 0.72rem; padding: 8px 12px; white-space: normal;
+    position: static !important; left: auto !important; top: auto !important;
+    transform: none !important; animation: none !important;
+    font-size: 0.72rem; padding: 6px 12px; white-space: normal;
   }
 
   .flip-card-project { min-height: 340px; }
@@ -2713,19 +2845,6 @@ footer span { color: var(--accent-builder); }
 .atom-legend {
   display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
   font-size: .6rem; color: var(--text-faint); letter-spacing: .05em; margin-top: 14px;
-}
-.orbit-ring::before, .orbit-ring::after {
-  content: ''; position: absolute; left: 50%; top: -5px;
-  width: 10px; height: 10px; margin-left: -5px; border-radius: 50%;
-  background: radial-gradient(circle, #d8ffe9 0%, var(--accent-silicon) 60%, transparent 75%);
-  box-shadow: 0 0 10px 2px rgba(0,255,136,.75);
-}
-.orbit-ring::after { top: auto; bottom: -5px; }
-@media (max-width: 600px) {
-  .orbit-ring::before, .orbit-ring::after { display: none; }
-  .hero-cmd { font-size: 0.68rem; margin-top: 8px; max-width: 100%; }
-  .hero-metrics { gap: 6px; margin-top: 8px; }
-  .hero-metric { padding: 4px 6px; line-height: 1.15; }
 }
 
 /* --- Shimmer bases (one-shot sweep triggered on reveal) --- */
@@ -2873,7 +2992,7 @@ footer span { color: var(--accent-builder); }
     animation: packet-pulse 1.2s ease-in-out infinite;
   }
 
-  /* College boot-rail signal flow (2016 → 2019 → 2022) */
+  /* College boot-rail signal flow (curiosity → VORA → Silicon DV) */
   .boot-rail > span:nth-child(1) { animation: boot-pulse 4s ease-in-out infinite; }
   .boot-rail > span:nth-child(3) { animation: boot-pulse 4s ease-in-out .8s infinite; }
   .boot-rail > span:nth-child(5) { animation: boot-pulse 4s ease-in-out 1.6s infinite; }
@@ -3646,7 +3765,7 @@ body { --vel: 0; --velglow: 0; --hero-y: 0px; --hero-fade: 0; }
 
 /* --- Skills focus: nucleus swells when the section is centred --- */
 .skills-track-360.focused .orbit-center {
-  transform: translate(-50%, -50%) translateZ(70px);
+  transform: translate(-50%, -50%) scale(1.08);
 }
 
 /* Stage labels stay anchored in normal document flow */

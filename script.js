@@ -760,100 +760,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ============================================
-  // 12. 3D ATOM ORBIT — skills as electrons (DV ref)
-  //     One rAF clock drives ring spin, chip depth &
-  //     counter-rotation so labels stay upright.
+  // 12. ATOM ORBIT — hover & tooltip bindings
   // ============================================
   const atomBox = document.querySelector('#dv-orbit .orbit-container');
-  const atomRings = [];
-  let atomVisible = true, atomLive = false, atomTheta = 0, atomLast = 0, atomRaf = 0;
-  const atomReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const atomSmall = window.matchMedia('(max-width: 768px)');
-
-  function atomConfFor(ring) {
-    if (ring.classList.contains('ring-1')) return { tilt: 62, speed: 0.34 };
-    if (ring.classList.contains('ring-2')) return { tilt: -58, speed: -0.26 };
-    return { tilt: 54, speed: 0.18 };
-  }
-
-  function layoutAtom() {
-    atomRings.length = 0;
-    if (!atomBox) return;
-    atomBox.querySelectorAll('.orbit-ring').forEach(ring => {
-      const conf = atomConfFor(ring);
-      const chips = Array.from(ring.querySelectorAll('.orbit-chip'));
-      const size = ring.offsetWidth || 1;
-      const c = size / 2;
-      const factor = ring.classList.contains('ring-1') ? 0.66
-        : ring.classList.contains('ring-2') ? 0.78 : 0.86;
-      const radius = c * factor;
-      chips.forEach((chip, i) => {
-        const a0 = (2 * Math.PI * i) / chips.length - Math.PI / 2;
-        chip.dataset.a0 = a0;
-        chip.style.left = (c + radius * Math.cos(a0)) + 'px';
-        chip.style.top = (c + radius * Math.sin(a0)) + 'px';
-        if (!chip.dataset.bound) {
-          chip.dataset.bound = '1';
-          chip.addEventListener('mouseenter', () => { chip.dataset.h = '1'; });
-          chip.addEventListener('mouseleave', () => { chip.dataset.h = ''; });
-        }
-      });
-      ring._tilt = conf.tilt;
-      ring._speed = conf.speed;
-      atomRings.push(ring);
+  if (atomBox) {
+    atomBox.querySelectorAll('.orbit-chip').forEach(chip => {
+      chip.setAttribute('tabindex', '0');
     });
-    drawAtom();
-  }
-
-  function drawAtom() {
-    const DEG = Math.PI / 180;
-    for (const ring of atomRings) {
-      const S = atomTheta * ring._speed;                 // radians
-      const Sdeg = S / DEG;
-      const tilt = ring._tilt;
-      ring.style.transform = 'translate(-50%,-50%) rotateX(' + tilt + 'deg) rotateZ(' + Sdeg.toFixed(2) + 'deg)';
-      const rz = -Sdeg, rx = -tilt;
-      const sinT = Math.sin(tilt * DEG);
-      ring.querySelectorAll('.orbit-chip').forEach(chip => {
-        const a0 = parseFloat(chip.dataset.a0) || 0;
-        const zf = Math.sin(a0 + S) * sinT;               // -1 back .. +1 front
-        const ds = 1 + zf * 0.15;
-        const op = 0.66 + (zf + 1) * 0.17;                // 0.66 .. 1
-        chip.style.setProperty('--rz', rz.toFixed(2) + 'deg');
-        chip.style.setProperty('--rx', rx.toFixed(2) + 'deg');
-        chip.style.setProperty('--ds', ds.toFixed(3));
-        chip.style.setProperty('--do', op.toFixed(2));
-        chip.style.zIndex = String(Math.round(zf * 12) + (chip.dataset.h ? 100 : 0));
-      });
-    }
-  }
-
-  function atomTick(now) {
-    atomRaf = requestAnimationFrame(atomTick);
-    if (!atomLive || !atomVisible || document.hidden) { atomLast = now; return; }
-    const dt = Math.min(80, now - (atomLast || now));
-    atomLast = now;
-    atomTheta += dt / 1000;
-    drawAtom();
-  }
-
-  function updateAtomMode() {
-    atomLive = !atomReduced && !atomSmall.matches;
-    if (atomLive) {
-      if (!atomRaf) { atomLast = 0; atomRaf = requestAnimationFrame(atomTick); }
-    } else if (atomRaf) {
-      cancelAnimationFrame(atomRaf); atomRaf = 0;
-    }
-    drawAtom();   // static snapshot (tilted, unspun) when not live
-  }
-
-  layoutAtom();
-  updateAtomMode();
-  window.addEventListener('resize', () => { layoutAtom(); updateAtomMode(); });
-  if (document.fonts) document.fonts.ready.then(layoutAtom);
-  if (atomSmall.addEventListener) atomSmall.addEventListener('change', updateAtomMode);
-  if ('IntersectionObserver' in window && atomBox) {
-    new IntersectionObserver(en => { atomVisible = en[0].isIntersecting; }, { threshold: 0 }).observe(atomBox);
   }
 
   // ============================================
